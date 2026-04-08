@@ -12,24 +12,37 @@ Chulwook Park (Seoul National University, IIASA, OIST)
 
 ## Overview
 
-This repository contains the simulation code, analysis notebooks, and data files needed to reproduce all figures in the manuscript. The study uses agent-based network simulations to investigate how failure propagation regimes and exploration-imitation balance affect population-level outcomes in networked systems with structurally heterogeneous agents.
+This repository contains the simulation code and data files needed to reproduce all main results reported in the manuscript. The core model implements network-agent dynamics with two failure propagation regimes distinguished by a single mechanical condition, which is the foundational contribution of this study.
 
-The core network-agent dynamics model shared with two companion papers (Refs [1] and [5] in the manuscript) is available at: https://github.com/pcw8531/sports-network-risk-propagation
+The model shared with two companion papers (Refs [1] and [5] in the manuscript) is available at: https://github.com/pcw8531/sports-network-risk-propagation
+
+## The Critical Regime Distinction
+
+The entire analysis rests on a single-line mechanical switch in the failure propagation loop:
+
+```python
+# CONDITIONAL regime: propagation only from nodes that have actually failed
+if Failure[i] > 0:
+
+# UNRESTRICTED regime: propagation from all nodes regardless of state
+if Failure[i] >= 0:
+```
+
+Under conditional propagation, failure potential spreads only from actually failed nodes, creating localized failure clusters that agents can partially manage through protection investment. Under unrestricted propagation, every node transmits failure potential at every step, overwhelming protection and collapsing the system. This distinction produces the regime comparison in Figure 1 and determines the baseline for all subsequent exploration-imitation analyses.
+
+Both regimes are implemented in `core/model_hpc.py` (lines clearly marked) and `core/model_local.py`.
 
 ## Requirements
 
 - Python 3.9+
 - NumPy
 - NetworkX
-- Matplotlib
-- SciPy
+- Matplotlib (for supplementary movies)
+- SciPy (for figure-specific analyses)
 
-Install dependencies:
 ```
 pip install numpy networkx matplotlib scipy
 ```
-
-For full-scale simulations (T = 10,000,000), access to an HPC cluster with SLURM is recommended. All figure-generation notebooks can run locally using the provided data files.
 
 ## Repository Structure
 
@@ -39,19 +52,17 @@ hidden-cost-exploration-risk/
 ├── LICENSE
 ├── requirements.txt
 │
-├── notebooks/                    # Jupyter notebooks for all figures
-│   ├── Fig_1.ipynb              # Failure propagation regime comparison
-│   ├── Fig_2.ipynb              # Structural penalty of centrality
-│   ├── Fig_3.ipynb              # Exploration under risk (hidden cost)
-│   ├── Fig_4.ipynb              # Structure-dependent scaling
-│   ├── Fig_5.ipynb              # Fold bifurcation in strategy diversity
-│   ├── SI_Fig_1.ipynb           # Analytical mean-field validation
-│   ├── SI_Fig_3.ipynb           # Agent-level structural penalty
-│   ├── SI_Fig_4.ipynb           # Population-level protection efficiency
-│   ├── Supp_Movie_1.ipynb       # Ternary attractor migration animation
-│   └── Supp_Movie_2.ipynb       # Side-by-side evolutionary dynamics
+├── core/                             # Foundational simulation code
+│   ├── model_local.py               # Local execution (n=100, T=100K)
+│   ├── model_hpc.py                 # HPC execution (n=500, T=10M, SLURM)
+│   └── submit.sh                    # SLURM sbatch submission script
 │
-├── data/                         # Simulation output files
+├── simulation/                       # Figure-specific simulation scripts
+│   ├── fig3_sim.py                  # pr sweep at pe=0.1 and pe=0.9
+│   ├── fig4_sim.py                  # Four-topology comparison
+│   └── fig5_sim.py                  # Bifurcation observation points
+│
+├── data/                             # Simulation output files
 │   ├── regime_comparison_data.npz
 │   ├── fig3_unified_scatter.npz
 │   ├── fig3_unified_traces.npz
@@ -59,71 +70,56 @@ hidden-cost-exploration-risk/
 │   ├── si_fig1_data.npz
 │   └── si_fig3_data.npz
 │
-└── movies/                       # Supplementary Movie files
+└── movies/                           # Supplementary Movie files
+    ├── supp_movie1_ternary.py
     ├── supp_movie1_ternary.mp4
+    ├── supp_movie2_dynamics.py
     └── supp_movie2_dynamics.mp4
 ```
 
+## Core Model
+
+The `core/` directory contains the foundational simulation code from which all results are derived.
+
+| File | Scale | Description |
+|------|-------|-------------|
+| `model_local.py` | n=100, T=100,000 | Local execution for prototyping and figure iteration. Implements conditional propagation (Failure[i] > 0). |
+| `model_hpc.py` | n=500, T=10,000,000 | HPC execution with SLURM job array for pr sweep. Contains both regime conditions with toggle comments. Produces the full-scale convergence data reported in Supplementary Figure 2. |
+| `submit.sh` | — | SLURM submission script. Array indices 0-8 map to pr = 0.1, 0.2, ..., 0.9. |
+
+The figure-specific scripts in `simulation/` are derived from this core code with parameter modifications for each analysis.
+
 ## Data Files
 
-All `.npz` files contain genuine simulation output generated by the model described in the manuscript Methods section. No data has been fabricated, interpolated, or artificially constructed.
+All `.npz` files contain genuine simulation output generated by the model described in the manuscript Methods section.
 
-| File | Description | Parameters |
-|------|-------------|------------|
-| `regime_comparison_data.npz` | Failure rate and functional capacity across connectance for four topologies under both propagation regimes | n=100, T=100, R=3 |
-| `fig3_unified_scatter.npz` | Agent-level stationary-state values (functional capacity, protection, failure frequency) at two exploration levels | BA(100,10), T=1,000,000, pr=0.1, s=10 |
-| `fig3_unified_traces.npz` | Time-series traces of agent strategies and capital for five representative agents at centrality percentiles | BA(100,10), T=1,000,000, pr=0.1, s=10 |
-| `fig5_data.npz` | Normalized hub-peripheral protection gap and population averages at four (pe, pr) conditions | BA(100,10), T=200,000, seed=42 |
-| `si_fig1_data.npz` | Simulation results for analytical mean-field validation on regular networks | n=200, k=20, T=10,000 |
-| `si_fig3_data.npz` | Agent-level protection, failure, and capacity relationships under two exploration levels | BA(100,10), T=1,000,000, pr=0.1 |
+| File | Used in | Description | Parameters |
+|------|---------|-------------|------------|
+| `regime_comparison_data.npz` | Figure 1 | Failure rate and functional capacity under both propagation regimes | n=100, T=100, R=3 |
+| `fig3_unified_scatter.npz` | Figure 2 (top) | Agent-level stationary-state functional capacity, protection, and failure frequency | BA(100,10), T=1,000,000, pr=0.1, s=10 |
+| `fig3_unified_traces.npz` | Figure 2 (bottom) | Time-series traces of agent strategies for five representative agents | BA(100,10), T=1,000,000, pr=0.1, s=10 |
+| `fig5_data.npz` | Figure 5 | Normalized hub-peripheral protection gap at four (pe, pr) conditions | BA(100,10), T=200,000, seed=42 |
+| `si_fig1_data.npz` | SI Figure 1 | Simulation results for analytical mean-field validation | n=200, k=20, T=10,000 |
+| `si_fig3_data.npz` | SI Figures 3, 4 | Agent-level protection, failure, and capacity relationships | BA(100,10), T=1,000,000, pr=0.1 |
 
-## Figure Reproduction Guide
-
-Each notebook is self-contained and loads data from the `data/` directory. Notebooks contain simulation code (Part 1, can be skipped if data files are present) and plotting code (Part 2, generates the figure).
-
-| Figure | Notebook | Data required | Notes |
-|--------|----------|---------------|-------|
-| Figure 1 | `Fig_1.ipynb` | `regime_comparison_data.npz` | Four-topology regime comparison |
-| Figure 2 | `Fig_2.ipynb` | `fig3_unified_scatter.npz`, `fig3_unified_traces.npz` | T=1M stationary state |
-| Figure 3 | `Fig_3.ipynb` | Runs locally (T=100K, R=3, ~5 min) | Includes ternary series |
-| Figure 4 | `Fig_4.ipynb` | Runs locally (T=20K, R=2, ~2 min) | Hardcoded simulation values in code |
-| Figure 5 | `Fig_5.ipynb` | `fig5_data.npz` | Top: bifurcation. Bottom: schematic from simulation observations |
-| SI Fig. 1 | `SI_Fig_1.ipynb` | `si_fig1_data.npz` | Analytical validation |
-| SI Fig. 3 | `SI_Fig_3.ipynb` | `si_fig3_data.npz` | Agent-level confirmation |
-| SI Fig. 4 | `SI_Fig_4.ipynb` | Same as SI Fig. 3 | Protection efficiency |
+Figure 3 data are generated by `fig3_sim.py` (T=100,000, R=3). Figure 4 values are generated by `fig4_sim.py` (T=20,000, R=2).
 
 ## Supplementary Movies
 
-| Movie | Notebook | Description |
-|-------|----------|-------------|
-| Movie 1 | `Supp_Movie_1.ipynb` | Continuous attractor migration in ternary strategy phase space as exploration probability increases from 0.1 to 0.9. Flow field and attractor position interpolated between simulation endpoints. |
-| Movie 2 | `Supp_Movie_2.ipynb` | Side-by-side evolutionary dynamics comparing high exploration (pe=0.9) and low exploration (pe=0.1) from identical initial conditions. Network states, population-averaged statistics, and individual failure histories shown. Schematic visualization based on simulation observations. |
+| File | Description |
+|------|-------------|
+| `supp_movie1_ternary.mp4` | Continuous attractor migration in ternary strategy phase space as pe increases from 0.1 to 0.9. Flow field and attractor position interpolated between simulation endpoints. |
+| `supp_movie2_dynamics.mp4` | Side-by-side evolutionary dynamics comparing pe=0.9 and pe=0.1 from identical initial conditions. Schematic visualization based on simulation observations. |
 
-Pre-rendered MP4 files are provided in the `movies/` directory.
-
-## HPC Simulation
-
-Full-scale simulations (T=10,000,000, n=500) were executed on the OIST HPC cluster using SLURM. The imitation probability pr is swept via job array index:
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=hidden_cost
-#SBATCH --array=0-8
-#SBATCH --time=48:00:00
-#SBATCH --mem=8G
-
-python3 simulation.py $SLURM_ARRAY_TASK_ID
-```
-
-The nine array indices correspond to pr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9].
+The `.py` scripts that generate these movies are included. They require `matplotlib` and `ffmpeg`.
 
 ## Model Parameters
 
-Default parameters used throughout the study (see Supplementary Table 2 for cross-study comparison):
+Default parameters (see Supplementary Table 2 for cross-study comparison):
 
 | Parameter | Symbol | Value |
 |-----------|--------|-------|
-| Network | BA scale-free | n=100, m=10 |
+| Network | BA scale-free | n=100 (local), n=500 (HPC), m=10 |
 | Failure origination | pn | 0.1 |
 | Failure propagation | pl | 0.3 |
 | Max protection probability | pp,max | 1.0 |
