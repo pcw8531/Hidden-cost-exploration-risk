@@ -71,9 +71,7 @@ hidden-cost-exploration-risk/
 │   └── si_fig3_data.npz
 │
 └── movies/                           # Supplementary Movie files
-    ├── supp_movie1_ternary.py
     ├── supp_movie1_ternary.mp4
-    ├── supp_movie2_dynamics.py
     └── supp_movie2_dynamics.mp4
 ```
 
