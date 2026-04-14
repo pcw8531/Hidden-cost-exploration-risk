@@ -6,7 +6,6 @@ Simulation code and data for:
 
 Chulwook Park (Seoul National University, IIASA, OIST)
 
-*Nature Communications* (2026)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19467397.svg)](https://doi.org/10.5281/zenodo.19467397)
 
