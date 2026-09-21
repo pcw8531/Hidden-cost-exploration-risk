@@ -1,4 +1,4 @@
-Exploration Under Risk in Hub-Dependent Networks
+# Exploration Under Risk in Hub-Dependent Networks
 
 Simulation code and data for:
 
