@@ -1,13 +1,24 @@
 """
-Figure 3 simulation: Exploration under risk in scale-free networks.
+Exploration under risk in scale-free networks.
+
+Produces the data behind Figure 4 of the manuscript, which was Figure 3 of the
+submitted version. The revision adds a schematic as Figure 1, so the submitted
+Figures 1 to 5 appear as Figures 2 to 6.
 
 Sweeps imitation probability pr = 0.1 to 0.9 at two exploration levels
-(pe = 0.1 and pe = 0.9) under conditional propagation on BA scale-free
-networks. Outputs stationary-state averages of memorized functional
-capacity and failure rate for each (pe, pr) combination.
+(pe = 0.1 and pe = 0.9) under conditional propagation on a BA scale-free
+network. Every realisation is written out, not only its mean, so that the 95%
+intervals and the bootstrap interval on the exploration advantage reported in
+the manuscript can be recomputed from the file.
 
-Parameters: BA(100,10), seed=42, s=10, T=100,000, R=3, conditional regime.
-Estimated runtime: ~1 hour on local machine (18 conditions x ~3 min each).
+Parameters: BA(100,10), network seed=42, s=10, T=1,000,000, R=10,
+            conditional regime.
+The ten realisations differ in the dynamics only; the network is fixed.
+Stationary values are averages over the final 50% of each run.
+
+Runtime: this is the full-length protocol of the revision, so a single core
+takes days. Run the conditions in parallel, or use core/model_hpc.py with the
+SLURM array.
 
 Output: fig3_data.npz
 """
@@ -19,7 +30,7 @@ import time
 # Parameters
 n = 100
 m = 10
-T = 100000
+T = 1000000
 T_half = T // 2
 
 pmax = 1.0
@@ -34,9 +45,10 @@ sigma = 0.001
 rec1 = 1.0
 failtime = 1
 
-pr_values = np.arange(0.1, 1.0, 0.1)
+pr_values = np.round(np.arange(0.1, 1.0, 0.1), 1)
 pe_values = [0.1, 0.9]
-R = 3
+R = 10
+SEED0 = 40000
 
 # Network
 G = nx.barabasi_albert_graph(n, m, seed=42)
@@ -53,8 +65,10 @@ print(f"Stationary averaging: final 50% (t = {T_half} to {T})")
 print()
 
 
-def run_simulation(pe, pr):
+def run_simulation(pe, pr, seed):
     """Run one realization under conditional propagation."""
+    np.random.seed(seed)
+
     Capital = np.ones(n) * cin
     Capital_m = np.ones(n) * memory
     Strategy_0 = np.zeros(n)
@@ -65,8 +79,9 @@ def run_simulation(pe, pr):
     failtimear = np.zeros(n)
     failidx = []
 
-    result_cm = np.zeros(T)
-    result_f = np.zeros(T)
+    # Stationary accumulators, so memory does not scale with T
+    acc_cm = acc_f = 0.0
+    nacc = 0
 
     for t in range(T):
         # Failure potential origination
@@ -138,51 +153,36 @@ def run_simulation(pe, pr):
             if np.random.random() <= pe:
                 Strategy_1[i] += np.random.normal(0, sigma)
 
-        result_cm[t] = np.average(Capital_m)
-        result_f[t] = np.average(Failure)
+        if t >= T_half:
+            acc_cm += np.average(Capital_m)
+            acc_f += np.average(Failure)
+            nacc += 1
 
-    return {
-        'cm_mean': np.mean(result_cm[T_half:]),
-        'cm_std': np.std(result_cm[T_half:]),
-        'f_mean': np.mean(result_f[T_half:]),
-        'f_std': np.std(result_f[T_half:]),
-    }
+    return acc_cm / nacc, acc_f / nacc
 
 
 # Run all conditions
-all_results = {}
+conditions = [(pe, round(float(pr), 1)) for pe in pe_values for pr in pr_values]
+out = {}
 
-for pe in pe_values:
-    print(f"pe = {pe}")
-    for pr in pr_values:
-        cm_runs, f_runs = [], []
-        for r in range(R):
-            res = run_simulation(pe, pr)
-            cm_runs.append(res['cm_mean'])
-            f_runs.append(res['f_mean'])
+for ci, (pe, pr) in enumerate(conditions):
+    cm_runs, f_runs = [], []
+    t0 = time.time()
+    for r in range(R):
+        cm, f = run_simulation(pe, pr, SEED0 + 1000 * ci + r)
+        cm_runs.append(cm)
+        f_runs.append(f)
+    out[f'cm_pe{pe}_pr{pr}'] = np.array(cm_runs)
+    out[f'f_pe{pe}_pr{pr}'] = np.array(f_runs)
+    print(f"pe={pe}, pr={pr:.1f}: cm={np.mean(cm_runs):.4f} (+/-{np.std(cm_runs, ddof=1):.4f}), "
+          f"f={np.mean(f_runs):.4f} (+/-{np.std(f_runs, ddof=1):.4f})  "
+          f"[{time.time() - t0:.0f} s]")
 
-        all_results[(pe, round(pr, 1))] = {
-            'cm_mean': np.mean(cm_runs), 'cm_std': np.std(cm_runs),
-            'f_mean': np.mean(f_runs), 'f_std': np.std(f_runs),
-        }
-        print(f"  pr={pr:.1f}: cm={np.mean(cm_runs):.4f} (+/-{np.std(cm_runs):.4f}), "
-              f"f={np.mean(f_runs):.4f} (+/-{np.std(f_runs):.4f})")
-
-# Save
-cm_pe01 = np.array([all_results[(0.1, round(pr, 1))]['cm_mean'] for pr in pr_values])
-cm_pe09 = np.array([all_results[(0.9, round(pr, 1))]['cm_mean'] for pr in pr_values])
-cm_pe01_std = np.array([all_results[(0.1, round(pr, 1))]['cm_std'] for pr in pr_values])
-cm_pe09_std = np.array([all_results[(0.9, round(pr, 1))]['cm_std'] for pr in pr_values])
-f_pe01 = np.array([all_results[(0.1, round(pr, 1))]['f_mean'] for pr in pr_values])
-f_pe09 = np.array([all_results[(0.9, round(pr, 1))]['f_mean'] for pr in pr_values])
-f_pe01_std = np.array([all_results[(0.1, round(pr, 1))]['f_std'] for pr in pr_values])
-f_pe09_std = np.array([all_results[(0.9, round(pr, 1))]['f_std'] for pr in pr_values])
-
+# Save. Per-realisation arrays of length R, one pair per condition.
 np.savez('fig3_data.npz',
-         pr_values=pr_values,
-         cm_pe01=cm_pe01, cm_pe09=cm_pe09,
-         cm_pe01_std=cm_pe01_std, cm_pe09_std=cm_pe09_std,
-         f_pe01=f_pe01, f_pe09=f_pe09,
-         f_pe01_std=f_pe01_std, f_pe09_std=f_pe09_std)
+         T=T, R=R, seed0=SEED0, network_seed=42,
+         pr_values=pr_values, pe_values=np.array(pe_values),
+         centrality=Centrality,
+         **out)
 
 print("\nSaved: fig3_data.npz")
