@@ -6,7 +6,7 @@ Simulation code and data for:
 
 Chulwook Park (Seoul National University, OIST, IIASA)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19467397.svg)](https://doi.org/10.5281/zenodo.19467397)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19467396.svg)](https://doi.org/10.5281/zenodo.19467396)
 
 ## Overview
 
