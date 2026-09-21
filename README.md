@@ -1,152 +1,106 @@
-# The Hidden Cost of Suppressing Failure
+Exploration Under Risk in Hub-Dependent Networks
 
 Simulation code and data for:
 
-**The hidden cost of suppressing failure: exploration under risk drives adaptive success in sports network-agent dynamics**
+Exploration under risk sustains functional capacity in hub-dependent networks when failure propagation is contained
 
-Chulwook Park (Seoul National University, IIASA, OIST)
+Chulwook Park (Seoul National University, OIST, IIASA)
 
+DOI
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19467397.svg)](https://doi.org/10.5281/zenodo.19467397)
+Overview
 
-## Overview
+Every measured value in the manuscript and the electronic supplementary material is reproducible from this repository. The core model implements network-agent dynamics under two failure propagation regimes separated by a single mechanical condition.
 
-This repository contains the simulation code and data files needed to reproduce all main results reported in the manuscript. The core model implements network-agent dynamics with two failure propagation regimes distinguished by a single mechanical condition, which is the foundational contribution of this study.
+The model shared with the companion papers, refs [1] and [5] in the manuscript, is at https://github.com/pcw8531/sports-network-risk-propagation
 
-The model shared with two companion papers (Refs [1] and [5] in the manuscript) is available at: https://github.com/pcw8531/sports-network-risk-propagation
+The regime distinction
 
-## The Critical Regime Distinction
+The analysis rests on one line in the propagation loop.
 
-The entire analysis rests on a single-line mechanical switch in the failure propagation loop:
-
-```python
-# CONDITIONAL regime: propagation only from nodes that have actually failed
+python
+# CONDITIONAL: propagation only from nodes that have actually failed
 if Failure[i] > 0:
 
-# UNRESTRICTED regime: propagation from all nodes regardless of state
+# UNRESTRICTED: propagation from all nodes regardless of state
 if Failure[i] >= 0:
-```
 
-Under conditional propagation, failure potential spreads only from actually failed nodes, creating localized failure clusters that agents can partially manage through protection investment. Under unrestricted propagation, every node transmits failure potential at every step, overwhelming protection and collapsing the system. This distinction produces the regime comparison in Figure 1 and determines the baseline for all subsequent exploration-imitation analyses.
+Under the conditional rule, propagation pressure scales with the local failure environment, so the strategy composition of the population can influence the outcome. Under the unrestricted rule the propagation term saturates and differences in protection between agents produce only small differences in failure. In the scale-free case 89 per cent of agents stay active under the conditional rule against 80 per cent failing under the unrestricted rule, a 4.3-fold difference in mean functional capacity.
 
-Both regimes are implemented in `core/model_hpc.py` (lines clearly marked) and `core/model_local.py`.
+Both are implemented in core/model_hpc.py, with the two lines marked, and in core/model_local.py.
 
-## Requirements
+Requirements
 
-- Python 3.9+
-- NumPy
-- NetworkX
-- Matplotlib (for supplementary movies)
-- SciPy (for figure-specific analyses)
+Python 3.9+, NumPy, NetworkX, SciPy, Matplotlib.
 
-```
-pip install numpy networkx matplotlib scipy
-```
+pip install numpy networkx scipy matplotlib
+Structure
+Hidden-cost-exploration-risk/
+├── core/
+│   ├── model_local.py                 # local execution, conditional propagation
+│   ├── model_hpc.py                   # HPC execution, both regimes, SLURM job array
+│   └── submit.sh                      # array indices 0-8 map to pr = 0.1 ... 0.9
+├── simulation/
+│   ├── fig2_regime_topology.py
+│   ├── fig3_penalty.py
+│   ├── fig4_exploration.py
+│   ├── fig5_topology_grid.py
+│   ├── fig6_bifurcation.py
+│   └── si_figures.py                  # Supplementary Figures 5, 6, 7
+└── data/                              # .npz output, one file per analysis
+Data
 
-## Repository Structure
+Unless a row says otherwise, each run is T = 1,000,000 steps with R = 10 independent realisations on one fixed network per topology generated with seed 42, averaged over the stationary final half.
 
-```
-hidden-cost-exploration-risk/
-├── README.md
-├── LICENSE
-├── requirements.txt
-│
-├── core/                             # Foundational simulation code
-│   ├── model_local.py               # Local execution (n=100, T=100K)
-│   ├── model_hpc.py                 # HPC execution (n=500, T=10M, SLURM)
-│   └── submit.sh                    # SLURM sbatch submission script
-│
-├── simulation/                       # Figure-specific simulation scripts
-│   ├── fig3_sim.py                  # pr sweep at pe=0.1 and pe=0.9
-│   ├── fig4_sim.py                  # Four-topology comparison
-│   └── fig5_sim.py                  # Bifurcation observation points
-│
-├── data/                             # Simulation output files
-│   ├── regime_comparison_data.npz
-│   ├── fig3_unified_scatter.npz
-│   ├── fig3_unified_traces.npz
-│   ├── fig5_data.npz
-│   ├── si_fig1_data.npz
-│   └── si_fig3_data.npz
-│
-└── movies/                           # Supplementary Movie files
-    ├── supp_movie1_ternary.mp4
-    └── supp_movie2_dynamics.mp4
-```
+File	Used in	Run
+fig2_regime_comparison.npz	Figure 2	connectance sweep, four topologies, both regimes, T = 100, new network per realisation
+fig3_scatter.npz	Figure 3, top	BA(100, 10), pr = 0.1, pe = 0.1 and 0.9, agent-level stationary values
+fig3_traces.npz	Figure 3, bottom	BA(100, 10), T = 100,000, one realisation, five agents across the centrality range
+fig4_exploration.npz	Figure 4	BA(100, 10), nine imitation probabilities at two exploration levels
+fig5_topology.npz	Figure 5 ternary panels, Supplementary Figure 4, Table S3	four topologies, nine pr at pe = 0.1 and 0.9, plus pe = 0.3, 0.5, 0.7 at pr = 0.1
+fig5_grid_*.npz	Figure 5 centre panel	four topologies on a grid of nine pr by five pe, 1800 runs
+fig6_bifurcation.npz	Figure 6	BA(100, 10), T = 200,000, one realisation
+si_fig1_meanfield.npz	Supplementary Figure 1	regular network, fixed protection, T = 10,000
+si_fig3_agent_level.npz	Supplementary Figure 3	BA(100, 10), pr = 0.1, both exploration levels
+si_fig5_regime_topology.npz	Supplementary Figure 5, Note 4	both regimes across four topologies at the stationary state, reduced connectance grid
+si_fig6_targeted.npz	Supplementary Figure 6	degree-targeted failure origination, BA(100, 10), pr = 0.1
+si_fig7_observed_network.npz	Supplementary Figure 7	observed positional passing network, eleven positions, 21 links
 
-## Core Model
+Supplementary Figure 2 is produced directly by core/model_hpc.py at BA(500, 10), T = 10,000,000, one realisation.
 
-The `core/` directory contains the foundational simulation code from which all results are derived.
+Parameters
 
-| File | Scale | Description |
-|------|-------|-------------|
-| `model_local.py` | n=100, T=100,000 | Local execution for prototyping and figure iteration. Implements conditional propagation (Failure[i] > 0). |
-| `model_hpc.py` | n=500, T=10,000,000 | HPC execution with SLURM job array for pr sweep. Contains both regime conditions with toggle comments. Produces the full-scale convergence data reported in Supplementary Figure 2. |
-| `submit.sh` | — | SLURM submission script. Array indices 0-8 map to pr = 0.1, 0.2, ..., 0.9. |
+Supplementary Table 2 of the manuscript gives the full cross-study comparison.
 
-The figure-specific scripts in `simulation/` are derived from this core code with parameter modifications for each analysis.
+Parameter	Symbol	Value
+Primary network	BA scale-free	n = 100, m = 10
+Comparison topologies	regular, ER, WS, BA	mean degree 20, WS rewiring 0.3
+Failure origination	pn	0.1
+Failure propagation	pl	0.3
+Max protection probability	pp,max	1.0
+Protection half-saturation	cp,1/2	0.05
+Initial functional capacity	c_in	1.0
+Maintenance fraction	fm	0.1
+Selection intensity	s	10
+Exploration noise SD	sigma_e	0.001
+Memory parameter	alpha	0.99
+Imitation probability	pr	0.1 to 0.9
+Exploration probability	pe	0.1 and 0.9, with 0.3, 0.5, 0.7 in the phase space
+Recovery delay	rt	1, immediate
+Time steps, realisations	T, R	1,000,000 and 10 for the main results
+Propagation regime	conditional	Failure[i] > 0
+Citation
+Park, C. Exploration under risk sustains functional capacity in hub-dependent
+networks when failure propagation is contained. J. R. Soc. Interface (2026).
+Related work
 
-## Data Files
+Third in a series sharing the same core model specification.
 
-All `.npz` files contain genuine simulation output generated by the model described in the manuscript Methods section.
+Park, C. Network topology and recovery delay thresholds determine cascading failure vulnerability in sports systems. Sci. Rep. 16, 10852 (2026).
+Park, C. Network centrality drives optimal protection investment against systemic risk propagation in complex systems. Sci. Rep. 16, 4595 (2026).
 
-| File | Used in | Description | Parameters |
-|------|---------|-------------|------------|
-| `regime_comparison_data.npz` | Figure 1 | Failure rate and functional capacity under both propagation regimes | n=100, T=100, R=3 |
-| `fig3_unified_scatter.npz` | Figure 2 (top) | Agent-level stationary-state functional capacity, protection, and failure frequency | BA(100,10), T=1,000,000, pr=0.1, s=10 |
-| `fig3_unified_traces.npz` | Figure 2 (bottom) | Time-series traces of agent strategies for five representative agents | BA(100,10), T=1,000,000, pr=0.1, s=10 |
-| `fig5_data.npz` | Figure 5 | Normalized hub-peripheral protection gap at four (pe, pr) conditions | BA(100,10), T=200,000, seed=42 |
-| `si_fig1_data.npz` | SI Figure 1 | Simulation results for analytical mean-field validation | n=200, k=20, T=10,000 |
-| `si_fig3_data.npz` | SI Figures 3, 4 | Agent-level protection, failure, and capacity relationships | BA(100,10), T=1,000,000, pr=0.1 |
+Code: https://github.com/pcw8531/sports-network-risk-propagation
 
-Figure 3 data are generated by `fig3_sim.py` (T=100,000, R=3). Figure 4 values are generated by `fig4_sim.py` (T=20,000, R=2).
+License
 
-## Supplementary Movies
-
-| File | Description |
-|------|-------------|
-| `supp_movie1_ternary.mp4` | Continuous attractor migration in ternary strategy phase space as pe increases from 0.1 to 0.9. Flow field and attractor position interpolated between simulation endpoints. |
-| `supp_movie2_dynamics.mp4` | Side-by-side evolutionary dynamics comparing pe=0.9 and pe=0.1 from identical initial conditions. Schematic visualization based on simulation observations. |
-
-The `.py` scripts that generate these movies are included. They require `matplotlib` and `ffmpeg`.
-
-## Model Parameters
-
-Default parameters (see Supplementary Table 2 for cross-study comparison):
-
-| Parameter | Symbol | Value |
-|-----------|--------|-------|
-| Network | BA scale-free | n=100 (local), n=500 (HPC), m=10 |
-| Failure origination | pn | 0.1 |
-| Failure propagation | pl | 0.3 |
-| Max protection probability | pp,max | 1.0 |
-| Protection half-saturation | cp,1/2 | 0.05 |
-| Initial capital | cin | 1.0 |
-| Maintenance fraction | fm | 0.1 |
-| Selection intensity | s | 10 |
-| Exploration noise SD | sigma_e | 0.001 |
-| Memory parameter | alpha | 0.99 |
-| Recovery delay | rt | 1 (immediate) |
-| Propagation regime | Conditional | Failure[i] > 0 |
-
-## Citation
-
-If you use this code or data, please cite:
-
-```
-Park, C. The hidden cost of suppressing failure: exploration under risk drives
-adaptive success in sports network-agent dynamics. Nat. Commun. (2026).
-```
-
-## Related Work
-
-This study is the third in a series sharing the same core model specification:
-
-1. Park, C. Network topology and recovery delay thresholds determine cascading failure vulnerability in sports systems. *Sci. Rep.* (2025).
-2. Park, C. Network centrality drives optimal protection investment against systemic risk propagation in complex systems. *Sci. Rep.* (2025).
-
-Code for these companion papers: https://github.com/pcw8531/sports-network-risk-propagation
-
-## License
-
-MIT License. See [LICENSE](LICENSE) for details.
+MIT License. See LICENSE for details.
