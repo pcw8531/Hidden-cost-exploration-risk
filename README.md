@@ -6,7 +6,7 @@ Simulation code and data for:
 
 Chulwook Park (Seoul National University, OIST, IIASA)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19467397.svg)](https://doi.org/10.5281/zenodo.19467397)
 
 ## Overview
 
@@ -42,19 +42,21 @@ pip install numpy networkx scipy matplotlib
 
 ```
 Hidden-cost-exploration-risk/
+├── README.md
+├── LICENSE
+├── requirements.txt
 ├── core/
 │   ├── model_local.py                 # local execution, conditional propagation
 │   ├── model_hpc.py                   # HPC execution, both regimes, SLURM job array
 │   └── submit.sh                      # array indices 0-8 map to pr = 0.1 ... 0.9
 ├── simulation/
-│   ├── fig2_regime_topology.py
-│   ├── fig3_penalty.py
-│   ├── fig4_exploration.py
-│   ├── fig5_topology_grid.py
-│   ├── fig6_bifurcation.py
-│   └── si_figures.py                  # Supplementary Figures 5, 6, 7
+│   ├── fig3_sim.py                    # imitation sweep at two exploration levels, BA(100, 10)
+│   ├── fig4_sim.py                    # four topologies, ternary panels, Supplementary Table S3
+│   └── fig5_sim.py                    # bifurcation observation points
 └── data/                              # .npz output, one file per analysis
 ```
+
+Script names follow the submitted figure numbers. The revision adds a schematic as Figure 1, so submitted Figures 3, 4 and 5 are Figures 4, 5 and 6 in the published version.
 
 ## Data
 
@@ -62,18 +64,18 @@ Unless a row says otherwise, each run is T = 1,000,000 steps with R = 10 indepen
 
 | File | Used in | Run |
 |------|---------|-----|
-| `fig2_regime_comparison.npz` | Figure 2 | connectance sweep, four topologies, both regimes, T = 100, new network per realisation |
-| `fig3_scatter.npz` | Figure 3, top | BA(100, 10), pr = 0.1, pe = 0.1 and 0.9, agent-level stationary values |
-| `fig3_traces.npz` | Figure 3, bottom | BA(100, 10), T = 100,000, one realisation, five agents across the centrality range |
-| `fig4_exploration.npz` | Figure 4 | BA(100, 10), nine imitation probabilities at two exploration levels |
-| `fig5_topology.npz` | Figure 5 ternary panels, Supplementary Figure 4, Table S3 | four topologies, nine pr at pe = 0.1 and 0.9, plus pe = 0.3, 0.5, 0.7 at pr = 0.1 |
-| `fig5_grid_*.npz` | Figure 5 centre panel | four topologies on a grid of nine pr by five pe, 1800 runs |
-| `fig6_bifurcation.npz` | Figure 6 | BA(100, 10), T = 200,000, one realisation |
-| `si_fig1_meanfield.npz` | Supplementary Figure 1 | regular network, fixed protection, T = 10,000 |
-| `si_fig3_agent_level.npz` | Supplementary Figure 3 | BA(100, 10), pr = 0.1, both exploration levels |
-| `si_fig5_regime_topology.npz` | Supplementary Figure 5, Note 4 | both regimes across four topologies at the stationary state, reduced connectance grid |
-| `si_fig6_targeted.npz` | Supplementary Figure 6 | degree-targeted failure origination, BA(100, 10), pr = 0.1 |
-| `si_fig7_observed_network.npz` | Supplementary Figure 7 | observed positional passing network, eleven positions, 21 links |
+| `regime_comparison_data.npz` | Figure 2, upper panels | connectance sweep, four topologies, both regimes, T = 100, new network per realisation |
+| `fig3_unified_scatter.npz` | Figure 3, upper row | BA(100, 10), pr = 0.1, pe = 0.1 and 0.9, agent-level stationary values |
+| `fig3_unified_traces.npz` | Figure 3, lower row | BA(100, 10), T = 100,000, one realisation, agent strategy traces across the centrality range |
+| `fig3_data.npz` | Figure 4 | BA(100, 10), nine imitation probabilities at two exploration levels |
+| `fig4_data.npz` | Figure 5 ternary panels, Supplementary Figure 4, Table S3 | four topologies, nine pr at pe = 0.1 and 0.9, plus pe = 0.3, 0.5, 0.7 at pr = 0.1 |
+| `fig4_grid_*.npz` | Figure 5 centre panel | four topologies on a grid of nine pr by five pe |
+| `fig5_data.npz` | Figure 6 | BA(100, 10), T = 200,000, one realisation |
+| `si_fig1_data.npz` | Supplementary Figure 1 | regular network, fixed protection, T = 10,000 |
+| `si_fig3_data.npz` | Supplementary Figure 3 | BA(100, 10), pr = 0.1, both exploration levels |
+| `fig1_data.npz` | Supplementary Figure 5, Note 4 | both regimes across four topologies at the stationary state, reduced degree grid |
+| `fig3_unified_scatter_targeted.npz` | Supplementary Figure 6 | degree-targeted failure origination, BA(100, 10), pr = 0.1 |
+| `sfig7_data.npz` | Supplementary Figure 7 | observed positional passing network, eleven positions, 21 links |
 
 Supplementary Figure 2 is produced directly by `core/model_hpc.py` at BA(500, 10), T = 10,000,000, one realisation.
 
