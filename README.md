@@ -10,7 +10,7 @@ Chulwook Park (Seoul National University, OIST, IIASA)
 
 ## Overview
 
-Every measured value in the manuscript and the electronic supplementary material is reproducible from this repository. The core model implements network-agent dynamics under two failure propagation regimes separated by a single mechanical condition.
+This repository holds the core model, the figure-specific simulation scripts, and the simulation output listed below. The core model implements network-agent dynamics under two failure propagation regimes separated by a single mechanical condition.
 
 The model shared with the companion papers, refs [1] and [5] in the manuscript, is at https://github.com/pcw8531/sports-network-risk-propagation
 
@@ -61,25 +61,19 @@ Script and data file names follow the submitted figure numbers. The revision add
 
 ## Data
 
-Unless a row says otherwise, each run is T = 1,000,000 steps with R = 10 independent realisations on one fixed network per topology generated with seed 42, averaged over the stationary final half.
+Each run is T = 1,000,000 steps with R = 10 independent realisations, averaged over the stationary final half.
 
 | File | Used in | Run |
 |------|---------|-----|
-| `regime_comparison_data.npz` | Figure 2, upper panels | connectance sweep, four topologies, both regimes, T = 100, new network per realisation |
-| `fig3_unified_scatter.npz` | Figure 3, upper row | BA(100, 10), pr = 0.1, pe = 0.1 and 0.9, agent-level stationary values |
-| `fig3_unified_traces.npz` | Figure 3, lower row | BA(100, 10), T = 100,000, one realisation, agent strategy traces across the centrality range |
 | `fig2_data.npz` | Figure 4, upper row | BA(100, 10), nine imitation probabilities at two exploration levels |
-| `fig3_ternary_data.npz` | Figure 4, ternary row | BA(100, 10), pr = 0.1, five exploration levels, with the transient |
+| `fig3_ternary_data.npz` | Figure 4, centre and ternary row | BA(100, 10), pr = 0.1, five exploration levels, with the transient |
 | `fig4_data.npz` | Figure 5 ternary panels, Supplementary Figure 4, Table S3 | four topologies, nine pr at pe = 0.1 and 0.9, plus pe = 0.3, 0.5, 0.7 at pr = 0.1 |
 | `fig4_grid_*.npz` | Figure 5 centre panel | four topologies on a grid of nine pr by five pe |
-| `fig5_data.npz` | Figure 6 | BA(100, 10), T = 200,000, one realisation |
-| `si_fig1_data.npz` | Supplementary Figure 1 | regular network, fixed protection, T = 10,000 |
-| `si_fig3_data.npz` | Supplementary Figure 3 | BA(100, 10), pr = 0.1, both exploration levels |
-| `fig1_data.npz` | Supplementary Figure 5, Note 4 | both regimes across four topologies at the stationary state, reduced degree grid |
+| `fig1_data.npz` | Supplementary Figure 5, Note 4 | both regimes across four topologies, reduced degree grid, new network per realisation |
 | `fig3_unified_scatter_targeted.npz` | Supplementary Figure 6 | degree-targeted failure origination, BA(100, 10), pr = 0.1 |
 | `sfig7_data.npz` | Supplementary Figure 7 | observed positional passing network, eleven positions, 21 links |
 
-Supplementary Figure 2 is produced directly by `core/model_hpc.py` at BA(500, 10), T = 10,000,000, one realisation.
+The remaining figures are reproduced by running the scripts in `simulation/` and `core/`. Supplementary Figure 2 comes directly from `core/model_hpc.py` at BA(500, 10), T = 10,000,000, one realisation.
 
 ## Parameters
 
