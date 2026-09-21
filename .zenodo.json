@@ -1,0 +1,31 @@
+{
+  "title": "Exploration under risk sustains functional capacity in hub-dependent networks when failure propagation is contained",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "mit",
+  "version": "v2.0",
+  "creators": [
+    {
+      "name": "Park, Chulwook",
+      "affiliation": "Seoul National University; Okinawa Institute of Science and Technology; International Institute for Applied Systems Analysis",
+      "orcid": "0000-0001-8714-5760"
+    }
+  ],
+  "description": "<p>Simulation code and output data for the study of exploration under risk in network-agent dynamics, submitted to <i>Journal of the Royal Society Interface</i>.</p><p>The core model implements network-agent dynamics under two failure propagation regimes separated by a single mechanical condition. Under the conditional rule only nodes that have failed transmit failure potential. Under the unrestricted rule every node transmits at every step. The archive holds the core model, the figure-specific simulation scripts, and the simulation output behind the analyses listed in the repository README.</p><p>Main results are run for T = 1,000,000 time steps with R = 10 independent realisations per condition.</p><p>Third in a series sharing the same core model specification. The shared model is at <a href=\"https://github.com/pcw8531/sports-network-risk-propagation\">https://github.com/pcw8531/sports-network-risk-propagation</a></p>",
+  "keywords": [
+    "network-agent dynamics",
+    "failure propagation",
+    "systemic risk",
+    "exploration and imitation",
+    "scale-free networks",
+    "cusp catastrophe",
+    "agent-based model"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/pcw8531/Hidden-cost-exploration-risk",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
