@@ -32,10 +32,10 @@ Both are implemented in `core/model_hpc.py`, with the two lines marked, and in `
 
 ## Requirements
 
-Python 3.9+, NumPy, NetworkX, SciPy, Matplotlib.
+Python 3.9+, NumPy, NetworkX, SciPy, Matplotlib, joblib.
 
 ```
-pip install numpy networkx scipy matplotlib
+pip install numpy networkx scipy matplotlib joblib
 ```
 
 ## Structure
@@ -52,11 +52,12 @@ Hidden-cost-exploration-risk/
 ├── simulation/
 │   ├── fig3_sim.py                    # imitation sweep at two exploration levels, BA(100, 10)
 │   ├── fig4_sim.py                    # four topologies, ternary panels, Supplementary Table S3
+│   ├── fig4_grid_sim.py               # four topologies on the nine by five grid, resumable
 │   └── fig5_sim.py                    # bifurcation observation points
 └── data/                              # .npz output, one file per analysis
 ```
 
-Script names follow the submitted figure numbers. The revision adds a schematic as Figure 1, so submitted Figures 3, 4 and 5 are Figures 4, 5 and 6 in the published version.
+Script and data file names follow the submitted figure numbers. The revision adds a schematic as Figure 1, so submitted Figures 3, 4 and 5 are Figures 4, 5 and 6 in the published version.
 
 ## Data
 
@@ -67,7 +68,8 @@ Unless a row says otherwise, each run is T = 1,000,000 steps with R = 10 indepen
 | `regime_comparison_data.npz` | Figure 2, upper panels | connectance sweep, four topologies, both regimes, T = 100, new network per realisation |
 | `fig3_unified_scatter.npz` | Figure 3, upper row | BA(100, 10), pr = 0.1, pe = 0.1 and 0.9, agent-level stationary values |
 | `fig3_unified_traces.npz` | Figure 3, lower row | BA(100, 10), T = 100,000, one realisation, agent strategy traces across the centrality range |
-| `fig3_data.npz` | Figure 4 | BA(100, 10), nine imitation probabilities at two exploration levels |
+| `fig2_data.npz` | Figure 4, upper row | BA(100, 10), nine imitation probabilities at two exploration levels |
+| `fig3_ternary_data.npz` | Figure 4, ternary row | BA(100, 10), pr = 0.1, five exploration levels, with the transient |
 | `fig4_data.npz` | Figure 5 ternary panels, Supplementary Figure 4, Table S3 | four topologies, nine pr at pe = 0.1 and 0.9, plus pe = 0.3, 0.5, 0.7 at pr = 0.1 |
 | `fig4_grid_*.npz` | Figure 5 centre panel | four topologies on a grid of nine pr by five pe |
 | `fig5_data.npz` | Figure 6 | BA(100, 10), T = 200,000, one realisation |
