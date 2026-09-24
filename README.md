@@ -10,9 +10,9 @@ Chulwook Park (Seoul National University, OIST, IIASA)
 
 ## Overview
 
-This repository holds the core model, the figure-specific simulation scripts, and the simulation output listed below. The core model implements network-agent dynamics under two failure propagation regimes separated by a single mechanical condition.
+This repository holds the core model, the figure-specific simulation scripts, the compiled implementation used for the populations of Figure 7, and the simulation output listed below. The core model implements network-agent dynamics under two failure propagation regimes separated by a single mechanical condition.
 
-The model shared with the companion papers, refs [1] and [5] in the manuscript, is at https://github.com/pcw8531/sports-network-risk-propagation
+The model shared with the companion papers, refs [1] and [3] in the manuscript, is at https://github.com/pcw8531/sports-network-risk-propagation
 
 ## The regime distinction
 
@@ -26,7 +26,7 @@ if Failure[i] > 0:
 if Failure[i] >= 0:
 ```
 
-Under the conditional rule, propagation pressure scales with the local failure environment, so the strategy composition of the population can influence the outcome. Under the unrestricted rule the propagation term saturates and differences in protection between agents produce only small differences in failure. In the scale-free case 89 per cent of agents stay active under the conditional rule against 80 per cent failing under the unrestricted rule, a 4.3-fold difference in mean functional capacity.
+Under the conditional rule, propagation pressure scales with the local failure environment, so the strategy composition of the population can influence the outcome. Under the unrestricted rule the propagation term saturates and differences in protection between agents produce only small differences in failure.
 
 Both are implemented in `core/model_hpc.py`, with the two lines marked, and in `core/model_local.py`.
 
@@ -38,6 +38,8 @@ Python 3.9+, NumPy, NetworkX, SciPy, Matplotlib, joblib.
 pip install numpy networkx scipy matplotlib joblib
 ```
 
+Rerunning the Figure 7 populations also needs a C compiler, gcc or clang, which on Windows means MinGW-w64 gcc or WSL. Reading the archived Figure 7 output needs none.
+
 ## Structure
 
 ```
@@ -45,6 +47,12 @@ Hidden-cost-exploration-risk/
 ├── README.md
 ├── LICENSE
 ├── requirements.txt
+├── application/                       # Figure 7, the league and the squad
+│   ├── Figure7_code.ipynb             # model, populations, quoted values and the figure
+│   ├── hc7.c                          # one realisation of the model in C, compiled by the notebook
+│   ├── league_data.npz                # league of 20 teams on the observed passing network
+│   ├── limb_data.npz                  # squad of 20 lower-limb structures
+│   └── single_team_check.npz          # one team alone, R = 40
 ├── core/
 │   ├── model_local.py                 # local execution, conditional propagation
 │   ├── model_hpc.py                   # HPC execution, both regimes, SLURM job array
@@ -57,7 +65,7 @@ Hidden-cost-exploration-risk/
 └── data/                              # .npz output, one file per analysis
 ```
 
-Script and data file names follow the submitted figure numbers. The revision adds a schematic as Figure 1, so submitted Figures 3, 4 and 5 are Figures 4, 5 and 6 in the published version.
+Script and data file names follow the figure numbers of an earlier draft. The table below gives the figure of the revised manuscript that uses each file.
 
 ## Data
 
@@ -72,8 +80,11 @@ Each run is T = 1,000,000 steps with R = 10 independent realisations, averaged o
 | `fig1_data.npz` | Supplementary Figure 5, Note 4 | both regimes across four topologies, reduced degree grid, new network per realisation |
 | `fig3_unified_scatter_targeted.npz` | Supplementary Figure 6 | degree-targeted failure origination, BA(100, 10), pr = 0.1 |
 | `sfig7_data.npz` | Supplementary Figure 7 | observed positional passing network, eleven positions, 21 links |
+| `application/league_data.npz` | Figure 7, Supplementary Table 5 and Note 5 | league of 20 teams, each the observed passing network, 220 agents, conditional propagation at pe = 0.1 and 0.9 for pr = 0.1 to 0.9 and unrestricted propagation at pr = 0.1 |
+| `application/limb_data.npz` | Figure 7, Supplementary Note 5 | squad of 20 lower-limb structures, three joints and eleven muscle groups with 14 links, 280 agents, both rules at pe = 0.1 and 0.9 and pr = 0.1 |
+| `application/single_team_check.npz` | Supplementary Note 5 | one team run alone, R = 40 at pe = 0.1 and 0.9 and pr = 0.1 |
 
-The remaining figures are reproduced by running the scripts in `simulation/` and `core/`. Supplementary Figure 2 comes directly from `core/model_hpc.py` at BA(500, 10), T = 10,000,000, one realisation.
+Figure 7 is reproduced by `application/Figure7_code.ipynb`. By default it reads the three archived files in its folder, and with `RUN_SIMULATIONS = True` it compiles `hc7.c` and reruns both populations. The remaining figures are reproduced by running the scripts in `simulation/` and `core/`. Supplementary Figure 2 comes directly from `core/model_hpc.py` at BA(500, 10), T = 10,000,000, one realisation.
 
 ## Parameters
 
@@ -82,19 +93,19 @@ Supplementary Table 2 of the manuscript gives the full cross-study comparison.
 | Parameter | Symbol | Value |
 |-----------|--------|-------|
 | Primary network | BA scale-free | n = 100, m = 10 |
-| Comparison topologies | regular, ER, WS, BA | mean degree 20, WS rewiring 0.3 |
+| Comparison topologies | regular, ER, WS, BA | mean degree close to 20 (18 for BA with m = 10), WS rewiring 0.3 |
 | Failure origination | pn | 0.1 |
 | Failure propagation | pl | 0.3 |
 | Max protection probability | pp,max | 1.0 |
 | Protection half-saturation | cp,1/2 | 0.05 |
-| Initial functional capacity | c_in | 1.0 |
+| Capacity received per step | c_in | 1.0 |
 | Maintenance fraction | fm | 0.1 |
 | Selection intensity | s | 10 |
 | Exploration noise SD | sigma_e | 0.001 |
 | Memory parameter | alpha | 0.99 |
 | Imitation probability | pr | 0.1 to 0.9 |
 | Exploration probability | pe | 0.1 and 0.9, with 0.3, 0.5, 0.7 in the phase space |
-| Recovery delay | rt | 1, immediate |
+| Recovery time | rt | 1, immediate |
 | Time steps, realisations | T, R | 1,000,000 and 10 for the main results |
 | Propagation regime | conditional | `Failure[i] > 0` |
 
